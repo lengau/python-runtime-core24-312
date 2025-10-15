@@ -5,7 +5,7 @@ summary: Runtime snap for Python 3.12 on core24.
 description: |
   ...
 
-grade: devel # must be 'stable' to release into candidate/stable channels
+grade: stable
 confinement: strict
 
 slots:
