@@ -1,5 +1,6 @@
 name: test-python-classic
-base: core24 # the base snap is the execution environment for this snap
+base: core26 # the base snap is the execution environment for this snap
+build-base: devel
 version: '0.1' # just for humans, typically '1.2+git' or '1.3.2'
 summary: Test a simple Python script with classic confinement.
 description: Test a simple Python script with classic confinement.
@@ -8,7 +9,7 @@ grade: devel # must be 'stable' to release into candidate/stable channels
 confinement: classic
 
 environment:
-  PATH: /snap/python-runtime-core24-312/current/usr/bin:$PATH
+  PATH: /snap/python-runtime-core26-314/current/usr/bin:$PATH
 
 parts:
   setup-tests:
@@ -17,13 +18,13 @@ parts:
       # Install the Python runtime snap for our development environment
       if [ -f /root/project/python-runtime-*.snap ]; then
         snap install --dangerous /root/project/python-runtime-*.snap
-      elif snap list python-runtime-core24-312; then
-        snap refresh --amend python-runtime-core24-312
+      elif snap list python-runtime-core26-314; then
+        snap refresh --amend python-runtime-core26-314
       else
-        snap install --edge python-runtime-core24-312
+        snap install --edge python-runtime-core26-314
       fi
       mkdir -p $CRAFT_PART_INSTALL/usr/bin
-      ln -s /snap/python-runtime-core24-312/current/usr/bin/python3.12 $CRAFT_PART_INSTALL/usr/bin/python3.12
+      ln -s /snap/python-runtime-core26-314/current/usr/bin/python3.14 $CRAFT_PART_INSTALL/usr/bin/python3.14
   script:
     after: [setup-tests]
     plugin: nil
@@ -38,17 +39,17 @@ parts:
     python-packages:
       - mypy==1.18.2
     build-environment:
-      - PARTS_PYTHON_INTERPRETER: python3.12
-      - PATH: /snap/python-runtime-core24-312/current/usr/bin/:$PATH
+      - PARTS_PYTHON_INTERPRETER: python3.14
+      - PATH: /snap/python-runtime-core26-314/current/usr/bin/:$PATH
     override-build: |
       mkdir -p "${CRAFT_PART_INSTALL}/usr/bin"
-      cp -af /snap/python-runtime-core24-312/current/usr/bin/python3.12 "${CRAFT_PART_INSTALL}/usr/bin/python3.12"
+      cp -af /snap/python-runtime-core26-314/current/usr/bin/python3.14 "${CRAFT_PART_INSTALL}/usr/bin/python3.14"
       craftctl default
     stage:
-      - -usr/bin/python3.12
+      - -usr/bin/python3.14
 
 apps:
   script:
-    command: usr/bin/python3.12 $SNAP/hello.py
+    command: usr/bin/python3.14 $SNAP/hello.py
   mypy:
     command: bin/python -m mypy

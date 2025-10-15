@@ -1,16 +1,17 @@
-name: python-runtime-core24-312
-base: core24
+name: python-runtime-core26-314
+base: core26
+build-base: devel
 adopt-info: python
-summary: Runtime snap for Python 3.12 on core24.
+summary: Runtime snap for Python 3.14 on core26.
 description: |
   ...
 
-grade: stable
+grade: devel
 confinement: strict
 
 slots:
   python-runtime:
-    content: python-runtime-core24-312
+    content: python-runtime-core26-314
     interface: content
     read:
     - "."
@@ -21,23 +22,30 @@ parts:
     build-packages:
       - jq
       - zstd
-    stage-packages:
-      - base-files_chisel  # Generate manifest
-      - python3_standard
-      - python3.12-venv_ensurepip  # Allow creating the virtual environment.
+    stage-packages: # TODO: Switch to slices once they exist.
+        - python3
+        - python3.14-venv
+        - python3.14-minimal
+        - python3.14
+        - libpython3.14-stdlib
+        - libpython3.14-minimal
+      # - base-files_chisel  # Generate manifest
+      # - python3_standard
+      # - python3.14-venv_ensurepip  # Allow creating the virtual environment.
     build-attributes:
       - enable-patchelf
     override-build: |
       craftctl default
-      craftctl set "version=$(cat "${CRAFT_PART_INSTALL}/var/lib/chisel/manifest.wall" | unzstd | jq -r '. | select(.name=="python3.12") | .version')"
+      # craftctl set "version=$(cat "${CRAFT_PART_INSTALL}/var/lib/chisel/manifest.wall" | unzstd | jq -r '. | select(.name=="python3.14") | .version')"
+      craftctl set "version=$(apt show python3.14|grep Version|cut -d' ' -f2)"
 
-      # Delete all files in the install dir that already exist in the base snap.
-      pushd /snap/core24/current
-      find . -type f | grep -v python > /tmp/core24_files.list
-      popd
-      pushd "${CRAFT_PART_INSTALL}"
-      find . -type f | grep --file=- /tmp/core24_files.list -F | xargs rm
-      popd
+      # # Delete all files in the install dir that already exist in the base snap.
+      # pushd /snap/core26/current
+      # find . -type f | grep -v python > /tmp/core26_files.list
+      # popd
+      # pushd "${CRAFT_PART_INSTALL}"
+      # find . -type f | grep --file=- /tmp/core26_files.list -F | xargs -r rm || true
+      # popd
 
       # Delete broken links
       find "${CRAFT_PART_INSTALL}" -xtype l -delete
