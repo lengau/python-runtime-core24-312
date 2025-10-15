@@ -1,0 +1,3 @@
+*.snap
+/spread/.extension
+/.spread-*.yaml

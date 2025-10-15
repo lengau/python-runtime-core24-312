@@ -1,0 +1,13 @@
+summary: Test a strictly-confined snap with a basic python script.
+
+environment:
+  SNAP_ARGS/devmode: --devmode
+  SNAP_ARGS/jailmode: --jailmode
+  SNAP_NAME: test-python-strict
+
+prepare: |
+  snap connect "${SNAP_NAME}":python-runtime "${SPREAD_PROJECT}"
+
+execute: |
+  test-python-strict.script | MATCH 'Hello from a Python script'
+  test-python-strict.mypy --version | MATCH 'mypy 1.18.2'

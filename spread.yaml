@@ -1,0 +1,33 @@
+project: python-runtime-core24-312
+
+path: /root/project
+
+backends:
+  lxd:
+    systems:
+      - ubuntu-18.04
+      - ubuntu-20.04
+      - ubuntu-22.04
+      - ubuntu-24.04
+      - ubuntu-25.10
+
+suites:
+  spread/general/:
+    summary: General integration tests
+    prepare-each: |
+      snap install --dangerous ${SNAP_ARGS} $(find "${SPREAD_PATH}/test" -type f -name "${SNAP_NAME}*.snap")
+
+prepare: |
+  while ! snap install snapd; do
+    snap wait system seed.loaded || sleep 4
+  done
+
+  snap install $SPREAD_PATH/$SPREAD_PROJECT*.snap --dangerous --jailmode
+restore: |
+  snap remove python-runtime --purge --terminate
+
+
+exclude:
+  - .git
+
+kill-timeout: 1h

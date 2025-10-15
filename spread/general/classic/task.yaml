@@ -1,0 +1,9 @@
+summary: Test a classic-confined snap with a basic python script.
+
+environment:
+  SNAP_ARGS: --classic
+  SNAP_NAME: test-python-classic
+
+execute: |
+  test-python-classic.script | MATCH 'Hello from a Python script'
+  test-python-classic.mypy --version | MATCH 'mypy 1.18.2'

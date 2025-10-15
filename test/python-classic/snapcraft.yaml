@@ -1,0 +1,54 @@
+name: test-python-classic
+base: core24 # the base snap is the execution environment for this snap
+version: '0.1' # just for humans, typically '1.2+git' or '1.3.2'
+summary: Test a simple Python script with classic confinement.
+description: Test a simple Python script with classic confinement.
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: classic
+
+environment:
+  PATH: /snap/python-runtime-core24-312/current/usr/bin:$PATH
+
+parts:
+  setup-tests:
+    plugin: nil
+    override-build: |
+      # Install the Python runtime snap for our development environment
+      if [ -f /root/project/python-runtime-*.snap ]; then
+        snap install --dangerous /root/project/python-runtime-*.snap
+      elif snap list python-runtime-core24-312; then
+        snap refresh --amend python-runtime-core24-312
+      else
+        snap install --edge python-runtime-core24-312
+      fi
+      mkdir -p $CRAFT_PART_INSTALL/usr/bin
+      ln -s /snap/python-runtime-core24-312/current/usr/bin/python3.12 $CRAFT_PART_INSTALL/usr/bin/python3.12
+  script:
+    after: [setup-tests]
+    plugin: nil
+    override-build: |
+      echo "print('Hello from a Python script')" > "${CRAFT_PART_INSTALL}/hello.py"
+  mypy:
+    after: [setup-tests]
+    plugin: python
+    source: .
+    build-attributes:
+      - enable-patchelf
+    python-packages:
+      - mypy==1.18.2
+    build-environment:
+      - PARTS_PYTHON_INTERPRETER: python3.12
+      - PATH: /snap/python-runtime-core24-312/current/usr/bin/:$PATH
+    override-build: |
+      mkdir -p "${CRAFT_PART_INSTALL}/usr/bin"
+      cp -af /snap/python-runtime-core24-312/current/usr/bin/python3.12 "${CRAFT_PART_INSTALL}/usr/bin/python3.12"
+      craftctl default
+    stage:
+      - -usr/bin/python3.12
+
+apps:
+  script:
+    command: usr/bin/python3.12 $SNAP/hello.py
+  mypy:
+    command: bin/python -m mypy
